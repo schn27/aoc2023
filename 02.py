@@ -7,7 +7,7 @@ colors = ('red', 'green', 'blue')
 
 def parse_game(s):
     left, right = s.split(':')
-    game = int(re.findall(r'\d+', left)[0])
+    game_id = int(re.findall(r'\d+', left)[0])
     sets = []
 
     for e in right.split(';'):
@@ -20,30 +20,20 @@ def parse_game(s):
 
         sets.append(cubes)
 
-    return (game, sets)
+    return (game_id, sets)
 
 games = list(map(parse_game, data.split('\n')))
 
 def part1(cubes):
-    res = 0
+    def is_set_valid(s):
+        return all(map(lambda p: p[0] <= p[1], zip(s, cubes)))
 
-    for game_id, sets in games:
-        if all(map(lambda s: all(map(lambda p: p[0] <= p[1], zip(s, cubes))), sets)):
-            res += game_id
+    valid_games = filter(lambda g: all(map(is_set_valid, g[1])), games)
 
-    return res
+    return sum(map(lambda g: g[0], valid_games))
 
 def part2():
-    res = 0
-
-    for game_id, sets in games:
-        cubes = [0] * len(colors)
-        for s in sets:
-            cubes = list(map(lambda p: max(p), zip(cubes, s)))
-
-        res += math.prod(cubes)
-
-    return res
+    return sum(map(lambda g: math.prod(map(max, zip(*g[1]))), games))
 
 submit(part1((12, 13, 14)), part='a')
 submit(part2(), part='b')
