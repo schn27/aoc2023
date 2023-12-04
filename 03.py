@@ -2,17 +2,18 @@ from aocd import data
 from aocd import submit
 import re
 
-def get_positions(lines):
-    positions = {'numbers': [], 'symbols': []}
+def parse(lines):
+    symbols = []
+    numbers = []
 
     for y, line in enumerate(lines):
         for match in re.finditer(r'\d+|[^\d\.]', line):
             if match.group().isdigit():
-                positions['numbers'].append((int(match.group()), (y, match.start(), match.end())))
+                numbers.append((int(match.group()), (y, match.start(), match.end())))
             else:
-                positions['symbols'].append((match.group(), (y, match.start())))
+                symbols.append((match.group(), (y, match.start())))
 
-    return positions
+    return (symbols, numbers)
 
 def is_adjacent(symbol, number):
     y, x = symbol[1]
@@ -22,28 +23,28 @@ def is_adjacent(symbol, number):
     y_max = number[1][0] + 1
     return y >= y_min and y <= y_max and x >= x_min and x <= x_max
 
-def get_part_numbers(positions):
-    numbers = []
+def get_part_numbers(symbols, numbers):
+    part_numbers = []
 
-    for n in positions['numbers']:
-        if len(list(filter(lambda s: is_adjacent(s, n), positions['symbols']))) > 0:
-            numbers.append(n[0])
+    for n in numbers:
+        if any(map(lambda s: is_adjacent(s, n), symbols)):
+            part_numbers.append(n[0])
 
-    return numbers
+    return part_numbers
 
-def get_gears(positions):
+def get_gears(symbols, numbers):
     gears = []
 
-    stars = filter(lambda e: e[0] == '*', positions['symbols'])
+    stars = filter(lambda e: e[0] == '*', symbols)
 
     for s in stars:
-        adjacent = list(filter(lambda n: is_adjacent(s, n), positions['numbers']))
+        adjacent = list(filter(lambda n: is_adjacent(s, n), numbers))
         if (len(adjacent) == 2):
             gears.append(adjacent[0][0] * adjacent[1][0])
 
     return gears
 
-positions = get_positions(data.split('\n'))
+symbols, numbers = parse(data.split('\n'))
 
-submit(sum(get_part_numbers(positions)), part='a')
-submit(sum(get_gears(positions)), part='b')
+submit(sum(get_part_numbers(symbols, numbers)), part='a')
+submit(sum(get_gears(symbols, numbers)), part='b')
