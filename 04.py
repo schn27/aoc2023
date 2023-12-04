@@ -2,11 +2,13 @@ from aocd import data
 from aocd import submit
 import re
 
-cards = list(map(
-    lambda line: list(map(
-        lambda s: list(map(int, re.findall(r'\d+', s))),
-        line.split(':')[1].split('|'))),
-    data.split('\n')))
+def parse_card(line):
+    def get_nums(s):
+        return list(map(int, re.findall(r'\d+', s)))
+
+    return list(map(get_nums, line.split(':')[1].split('|')))
+
+cards = list(map(parse_card, data.split('\n')))
 
 def get_score(matched):
     return 2 ** (matched - 1) if matched > 0 else 0
